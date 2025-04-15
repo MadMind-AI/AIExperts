@@ -24,14 +24,12 @@ proc newWriterExpert*(api: OpenAiApi, model: string): WriterExpert =
 
 # Генерация персонажа с нуля
 proc generatePerson*(writer: WriterExpert): Person =
+    # Системный промт
+    let systemPrompt = newText()
     # Пользовательский промт
-    var userPrompt = newText()
+    let userPrompt = newText()
 
-    let result = writer.api.complete(writer.model, @[], userPrompt, CompleteOptions(
-        temperature: some(0.7),
-        max_tokens: some(1000),
-        stream: some(false),
-        structuredResponse: some(
+    let structuredResponse =
             %* {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
@@ -93,10 +91,17 @@ proc generatePerson*(writer: WriterExpert): Person =
                 ],
                 "additionalProperties": false
             }
-        )
-    ))
+        
+    let completeOptions = CompleteOptions(
+        temperature: some(0.7),
+        max_tokens: some(1000),
+        stream: some(false),
+        structuredResponse: some(structuredResponse)
+    )
 
-    let jsonResult = parseJson(result)    
+    let completeResult = writer.api.complete(writer.model, systemPrompt, userPrompt, some(completeOptions))
+
+    let jsonResult = parseJson(completeResult)    
     let name = jsonResult["name"].getStr()
     let surname = jsonResult["surname"].getStr()
     let age = jsonResult["age"].getInt()
