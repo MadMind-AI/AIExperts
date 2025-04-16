@@ -31,6 +31,8 @@ type Person* = object
     isMain*: bool
     # Имя персонажа
     name*: string
+    # Фамилия персонажа
+    surname*: string
     # Пол персонажа
     sex*: string
     # Возраст персонажа
@@ -55,6 +57,7 @@ type PersonWithActions* = object
 proc newPerson*(
         isMain:bool,
         name:string, 
+        surname:string,
         sex:string,
         age:int, 
         look:Text,
@@ -64,6 +67,7 @@ proc newPerson*(
     result = Person(
         isMain: isMain,
         name: name, 
+        surname: surname,
         sex: sex,
         age: age, 
         look: look,
@@ -71,10 +75,14 @@ proc newPerson*(
         motivation: motivation, 
         memory: memory)
 
+# Получает полное имя персонажа
+proc getFullName*(person: Person): string =
+    return fmt"{person.name} {person.surname}"
+
 # Оператор для вывода персонажа в виде строки
 proc `$`*(person: Person): string =
     var txt = newText()
-    txt.add(fmt"{person.name}")
+    txt.add(fmt"{getFullName(person)}")
     txt.add(fmt"Пол: {person.sex} Возраст: {person.age}")
     txt.add(fmt"Внешность: {person.look}")
     txt.add(fmt"Характер: {person.character}")

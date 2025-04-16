@@ -3,7 +3,9 @@
 import options
 import json
 import strformat
-import ai_connector/openai_api
+
+import ai_connector/openai_api/openai_api
+import ai_connector/openai_api/structured_response
 import ai_connector/common/text
 import entity/person
 
@@ -27,77 +29,24 @@ proc generatePerson*(writer: WriterExpert): Person =
     # Системный промт
     let systemPrompt = newText()
     # Пользовательский промт
-    let userPrompt = newText()
+    var userPrompt = newText()
+    userPrompt.add("Придумай персонажа для ролевой игры.")
+    userPrompt.add("Придумай имя(name) и фамилию(surname).")
+    userPrompt.add("Возраст (age). Пол(sex).")
+    userPrompt.add("Как выглядит(look).")
+    userPrompt.add("Характер(character).")
+    userPrompt.add("Мотивацию(motivation).")
+    userPrompt.add("Предысторию персонажа(memory).")
 
-    let structuredResponse =
-            %* {
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Имя персонажа",
-                        "minLength": 1
-                    },
-                    "surname": {
-                        "type": "string",
-                        "description": "Фамилия персонажа",
-                        "minLength": 1
-                    },
-                    "age": {
-                        "type": "integer",
-                        "description": "Возраст персонажа",
-                        "minimum": 0
-                    },
-                    "sex": {
-                        "type": "string",
-                        "description": "Пол персонажа",
-                        "enum": [
-                            "Мужской",
-                            "Женский",
-                            "Другое"
-                        ]
-                    },
-                    "look": {
-                        "type": "string",
-                        "description": "Описание внешности персонажа",
-                        "minLength": 1
-                    },
-                    "character": {
-                        "type": "string",
-                        "description": "Описание характера персонажа",
-                        "minLength": 1
-                    },
-                    "motivation": {
-                        "type": "string",
-                        "description": "Мотивация персонажа",
-                        "minLength": 1
-                    },
-                    "memory": {
-                        "type": "string",
-                        "description": "Предыстория персонажа",
-                        "minLength": 1
-                    }
-                },
-                "required": [
-                    "name",
-                    "surname",
-                    "age",
-                    "sex",
-                    "look",
-                    "character",
-                    "motivation",
-                    "memory"
-                ],
-                "additionalProperties": false
-            }
-        
+    # Схема ответа
+    let structuredResponse = generateJsonSchema(Person)
+
     let completeOptions = CompleteOptions(
         temperature: some(0.7),
         max_tokens: some(1000),
         stream: some(false),
         structuredResponse: some(structuredResponse)
-    )
+    )    
 
     let completeResult = writer.api.complete(writer.model, systemPrompt, userPrompt, some(completeOptions))
 
