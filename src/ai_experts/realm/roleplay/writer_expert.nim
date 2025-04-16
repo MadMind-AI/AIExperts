@@ -61,7 +61,8 @@ proc generatePerson*(writer: WriterExpert): Person =
     let motivation = jsonResult["motivation"].getElems().mapIt(it.getStr())
     let memory = jsonResult["memory"].getElems().mapIt(it.getStr())
     return Person(
-        name: fmt"{name} {surname}",
+        name: name,
+        surname: surname,
         age: age,
         sex: sex,
         look: look,
