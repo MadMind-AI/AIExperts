@@ -3,6 +3,7 @@
 import options
 import json
 import strformat
+import sequtils
 
 import ai_connector/openai_api/openai_api
 import ai_connector/openai_api/structured_response
@@ -55,14 +56,16 @@ proc generatePerson*(writer: WriterExpert): Person =
     let surname = jsonResult["surname"].getStr()
     let age = jsonResult["age"].getInt()
     let sex = jsonResult["sex"].getStr()
-    let look = jsonResult["look"].getStr()
-    let character = jsonResult["character"].getStr()
+    let look = jsonResult["look"].getElems().mapIt(it.getStr())
+    let character = jsonResult["character"].getElems().mapIt(it.getStr())
+    let motivation = jsonResult["motivation"].getElems().mapIt(it.getStr())
+    let memory = jsonResult["memory"].getElems().mapIt(it.getStr())
     return Person(
         name: fmt"{name} {surname}",
         age: age,
         sex: sex,
-        look: newText(look),
-        character: newText(character),
-        motivation: newText(""),
-        memory: newText("")
+        look: look,
+        character: character,
+        motivation: motivation,
+        memory: memory
     )
