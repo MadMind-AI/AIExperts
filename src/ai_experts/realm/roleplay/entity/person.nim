@@ -55,15 +55,15 @@ type PersonWithActions* = object
 
 # Создает нового персонажа
 proc newPerson*(
-        isMain:bool,
-        name:string, 
-        surname:string,
-        sex:string,
-        age:int, 
-        look:Text,
-        character:Text, 
-        motivation:Text, 
-        memory:Text):Person =
+        isMain:bool = false,
+        name:string = "", 
+        surname:string = "",
+        sex:string = "",
+        age:int = 0, 
+        look:Text = newText(),
+        character:Text = newText(), 
+        motivation:Text = newText(), 
+        memory:Text = newText()):Person =
     result = Person(
         isMain: isMain,
         name: name, 
