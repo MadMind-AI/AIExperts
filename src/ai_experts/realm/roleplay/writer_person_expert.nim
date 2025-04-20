@@ -1,4 +1,4 @@
-# Писатель который придумывает истории
+# Писатель который придумывает персонажа
 
 import options
 import json
@@ -33,21 +33,21 @@ type
         peMemory = 1 shl 8
 
     # Модель для генерации текста
-    WriterExpert* = object
+    WriterPersonExpert* = object
         # API
         api: OpenAiApi
         # Модель для генерации текста
         model: string
 
 # Конструктор писателя который использует заданную модель
-proc newWriterExpert*(api: OpenAiApi, model: string): WriterExpert =        
-    return WriterExpert(
+proc newWriterPersonExpert*(api: OpenAiApi, model: string): WriterPersonExpert =        
+    return WriterPersonExpert(
         api: api,
         model: model
     )
 
 # Генерация персонажа с нуля
-proc generatePerson*(writer: WriterExpert): Person =
+proc generateRandomPerson*(writer: WriterPersonExpert): Person =
     # Системный промт
     let systemPrompt = newText()
     # Пользовательский промт
@@ -93,7 +93,7 @@ proc generatePerson*(writer: WriterExpert): Person =
     )
 
 # Улучшение персонажа
-proc enchancePerson*(writer: WriterExpert, person: Person, enchanceType: PersonEnchanceType): Person =
+proc enchancePerson*(writer: WriterPersonExpert, person: Person, enchanceType: PersonEnchanceType): Person =
     result = person
     
     var userPrompt = newText()
