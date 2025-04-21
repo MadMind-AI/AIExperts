@@ -30,7 +30,14 @@ type
         # Мотивация
         peMotivation = 1 shl 7,
         # Предыстория
-        peMemory = 1 shl 8
+        peMemory = 1 shl 8    
+
+    # Персонаж с отношениями
+    PersonWithRelations* = object
+        # Персонаж
+        person*: Person
+        # Отношения в произвольном виде: друг, враг, родственник, любовь
+        relations*: Text
 
     # Модель для генерации текста
     WriterPersonExpert* = object
@@ -47,7 +54,8 @@ proc newWriterPersonExpert*(api: OpenAiApi, model: string): WriterPersonExpert =
     )
 
 # Генерация персонажа с нуля
-proc generateRandomPerson*(writer: WriterPersonExpert): Person =
+# postPrompt - дополнительный промт для генерации персонажа который будет добавлен к основному промту в конце
+proc generateRandomPerson*(writer: WriterPersonExpert, postPrompt: Option[Text]): Person =
     # Системный промт
     let systemPrompt = newText()
     # Пользовательский промт
@@ -59,6 +67,10 @@ proc generateRandomPerson*(writer: WriterPersonExpert): Person =
     userPrompt.add("Характер(character).")
     userPrompt.add("Мотивацию(motivation).")
     userPrompt.add("Предысторию персонажа(memory).")
+
+    # Добавляем дополнительный промт
+    if postPrompt.isSome():
+        userPrompt.add(postPrompt.get())
 
     # Схема ответа
     let structuredResponse = generateJsonSchema(Person)
@@ -72,7 +84,7 @@ proc generateRandomPerson*(writer: WriterPersonExpert): Person =
 
     let completeResult = writer.api.complete(writer.model, systemPrompt, userPrompt, some(completeOptions))
 
-    let jsonResult = parseJson(completeResult)    
+    let jsonResult = parseJson(completeResult)
     let name = jsonResult["name"].getStr()
     let surname = jsonResult["surname"].getStr()
     let age = jsonResult["age"].getInt()
@@ -91,6 +103,21 @@ proc generateRandomPerson*(writer: WriterPersonExpert): Person =
         motivation: motivation,
         memory: memory
     )
+
+# Генерация персонажа с разными настройками
+proc generateRandomPerson*(
+        writer: WriterPersonExpert, 
+        worldDescription: Option[Text],
+        personWithRelations: Option[seq[PersonWithRelations]]): Person =   
+    var userPrompt = newText()
+    userPrompt.add("Персонаж должен вписываться в заданный мир:")
+    if worldDescription.isSome():
+        userPrompt.add(worldDescription.get())
+    if personWithRelations.isSome():
+        for personWithRelation in personWithRelations.get():
+            userPrompt.add(personWithRelation.relations)
+            
+    return generateRandomPerson(writer, some(userPrompt))
 
 # Улучшение персонажа
 proc enchancePerson*(writer: WriterPersonExpert, person: Person, enchanceType: PersonEnchanceType): Person =
